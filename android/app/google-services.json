@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "523518810866",
+    "project_id": "gp1-13",
+    "storage_bucket": "gp1-13.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:523518810866:android:020905d275cc99464f0e6b",
+        "android_client_info": {
+          "package_name": "com.example.inner_joy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBneO1nMLkPEEmJ4ZjSF5ztkPTc-sjc6Tw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

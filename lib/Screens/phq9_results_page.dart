@@ -2,14 +2,13 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart'; // Import Google Fonts
-import 'package:inner_joy/Screens/PhqPage.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:inner_joy/Screens/tabs.dart';
 
 class PHQResultsPage extends StatefulWidget {
   final int totalScore;
 
-  PHQResultsPage(this.totalScore);
+  PHQResultsPage({required this.totalScore}); // Updated constructor
 
   @override
   _PHQResultsPageState createState() => _PHQResultsPageState();
@@ -61,8 +60,7 @@ class _PHQResultsPageState extends State<PHQResultsPage> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(
-                'assets/images/Background4.png'), // Change to your background image path
+            image: AssetImage('assets/images/Background2.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -86,18 +84,18 @@ class _PHQResultsPageState extends State<PHQResultsPage> {
                 child: _interpretScore(widget.totalScore),
               ),
               _buildSection(
-                "Why I'm Feeling This Way?",
-                _renderUnderstandingYourselfContent(),
+                title: "Why I'm Feeling This Way?",
+                content: _renderUnderstandingYourselfContent(),
                 showImage: true,
               ),
               _buildSection(
-                'Advice To help You:',
-                _renderFriendlyAdvice(widget.totalScore),
+                title: 'Advice To help You:',
+                content: _renderFriendlyAdvice(widget.totalScore),
                 showImage: true,
               ),
               _buildSection(
-                'Next Steps and Follow-Up',
-                _renderNextStepsContent(widget.totalScore),
+                title: 'Next Steps and Follow-Up',
+                content: _renderNextStepsContent(widget.totalScore),
                 showImage: true,
               ),
               SizedBox(height: 0),
@@ -133,7 +131,6 @@ class _PHQResultsPageState extends State<PHQResultsPage> {
                       child: Text(
                         'Done',
                         style: GoogleFonts.nunito(
-                          // Use Google Fonts here
                           color: Colors.white,
                           fontSize: 18,
                         ),
@@ -149,7 +146,11 @@ class _PHQResultsPageState extends State<PHQResultsPage> {
     );
   }
 
-  Widget _buildSection(String title, Widget content, {bool showImage = true}) {
+  Widget _buildSection({
+    required String title,
+    required Widget content,
+    bool showImage = true,
+  }) {
     Image? sectionImage;
 
     if (title == "Why I'm Feeling This Way?") {
@@ -168,7 +169,6 @@ class _PHQResultsPageState extends State<PHQResultsPage> {
               Text(
                 title,
                 style: GoogleFonts.nunito(
-                  // Use Google Fonts here
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF694F79),
@@ -362,6 +362,8 @@ class _PHQResultsPageState extends State<PHQResultsPage> {
       severity = "Mild";
     } else if (score <= 14) {
       severity = "Moderate";
+    } else if (score <= 19) {
+      severity = "Moderately severe";
     } else {
       severity = "Severe";
     }
@@ -374,17 +376,17 @@ class _PHQResultsPageState extends State<PHQResultsPage> {
       result += '$severity depression symptoms';
     }
 
-  return Center(
-    child: Text(
-      result,
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 18,
+    return Center(
+      child: Text(
+        result,
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 18,
+        ),
+        textAlign: TextAlign.center, // Center-align the text
       ),
-      textAlign: TextAlign.center, // Center-align the text
-    ),
-  );
-}
+    );
+  }
 
   TextSpan _boldText(String text) {
     return TextSpan(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:inner_joy/Screens/phq9_results_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:inner_joy/Screens/PhqPage.dart';
 
 class PHQ9Questions extends StatefulWidget {
   @override
@@ -14,15 +14,15 @@ class _PHQ9QuestionsState extends State<PHQ9Questions> {
   List<int> userResponses = List.filled(9, -1);
 
   List<String> questions = [
-    "Do you have little interest or pleasure in doing things? \nFor example, imagine engaging in activities that used to bring joy, now there's disinterest or absence of pleasure.",
-    "Have you recently been feeling down, depressed, or hopeless?",
-    "Do you have trouble falling or staying asleep, or sleeping too much?",
-    "Are you constantly feeling tired or having little energy? \nLike you're going about your routine, a lack of energy makes even simple tasks feel exhausting.",
-    "Do you experience poor appetite or find yourself overeating?",
-    "Are there recurring thoughts of feeling bad about yourself or believing you are a failure or have let yourself or your family down?",
-    "Do you face trouble concentrating on things, such as reading or watching television?",
-    "Are often moving or speaking so slowly that other people could have noticed, or the opposite - being so fidgety or restless that you have been moving around a lot more than usual?",
-    "Do you encounter thoughts that you would be better off dead or of hurting yourself in some way?"
+    "Little interest or pleasure in doing things?",
+    "Feeling down, depressed, or hopeless?",
+    "Trouble falling or staying asleep, or sleeping too much?",
+    "Feeling tired or having little energy?",
+    "Poor appetite or overeating?",
+    "Feeling bad about yourself or that you are a failure or have let yourself or your family down?",
+    "Trouble concentrating on things, such as reading the newspaper or watching television?",
+    "Moving or speaking so slowly that other people could have noticed, or the opposite - being so fidgety or restless that you have been moving around a lot more than usual?",
+    "Thoughts that you would be better off dead or of hurting yourself in some way"
   ];
 
   void answerQuestion(int response) async {
@@ -34,34 +34,27 @@ class _PHQ9QuestionsState extends State<PHQ9Questions> {
     } else {
       int totalScore = userResponses.reduce((a, b) => a + b);
 
-      // Get the current date
       DateTime now = DateTime.now();
       int year = now.year;
       int month = now.month;
 
-      // Get the current user from Firebase Authentication
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
-        String userId = user.uid; // Retrieve the user ID from Firebase Auth
+        String userId = user.uid;
 
-        // Reference to the Firestore instance
         FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-        // Reference to the user's document
         DocumentReference userDoc = firestore.collection('users').doc(userId);
 
-        // Get the existing data of the user's document
         final userDocSnapshot = await userDoc.get();
         final Map<String, dynamic>? userData =
             userDocSnapshot.data() as Map<String, dynamic>?;
 
-        // Prepare a map with the new data
         Map<String, dynamic> data = {
           'latestPHQScore': totalScore,
         };
 
-        // If the user document exists, update the data
         if (userData != null) {
           if (userData['phqScores'] == null) {
             data['phqScores'] = [];
@@ -73,19 +66,19 @@ class _PHQ9QuestionsState extends State<PHQ9Questions> {
             'year': year,
             'month': month,
           });
-          // Add the username to the data if it's present
           if (userData['username'] != null) {
             data['username'] = userData['username'];
           }
         }
 
-        // Update the user's document in Firestore
-        userDoc.set(data);
+      userDoc.set(data, SetOptions(merge: true));
+
+      BuildContext pageContext = context;
 
         Navigator.push(
-          context,
+          pageContext,
           MaterialPageRoute(
-            builder: (context) => PHQResultsPage(totalScore as int),
+            builder: (pageContext) => PHQResultsPage(totalScore: totalScore),
           ),
         );
       }
@@ -105,110 +98,113 @@ class _PHQ9QuestionsState extends State<PHQ9Questions> {
             color: Color(0xFF694F79),
           ),
           onPressed: () {
-            Navigator.of(context).pop();
+            if (currentQuestionIndex > 0) {
+              setState(() {
+                currentQuestionIndex--;
+              });
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PhqPage(),
+                ),
+              );
+            }
           },
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/Background3.png'),
-            fit: BoxFit.cover,
+      body: Column(
+        children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Question ${currentQuestionIndex + 1} of 9',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF694F79),
+                ),
+              ),
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Question ${currentQuestionIndex + 1} of 9',
-                  style: GoogleFonts.nunito(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF694F79),
-                  ),
+          SizedBox(height: 20),
+          Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                questions[currentQuestionIndex],
+                style: TextStyle(
+                  fontSize: 25,
+                  color: Color(0xFF694F79),
                 ),
               ),
             ),
-            SizedBox(height: 20),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  questions[currentQuestionIndex],
-                  style: GoogleFonts.nunito(
-                    fontSize: 20,
-                    color: Color(0xFF694F79),
+          ),
+          SizedBox(height: 20),
+          Container(
+            width: double.infinity,
+            height: 1,
+            color: Colors.grey,
+            margin: EdgeInsets.only(bottom: 15),
+          ),
+          for (int i = 0; i < 4; i++)
+            Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30.0),
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFFB8A2B9),
+                        Color(0xFFA18AAE),
+                      ],
+                    ),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => answerQuestion(i),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.transparent,
+                      elevation: 0,
+                      padding: EdgeInsets.all(20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                    child: Text(
+                      i == 0
+                          ? "Not at all"
+                          : i == 1
+                              ? "Several days"
+                              : i == 2
+                                  ? "More than half the days"
+                                  : "Nearly every day",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              height: 1,
-              color: Colors.grey,
-              margin: EdgeInsets.only(bottom: 15),
-            ),
-            for (int i = 0; i < 4; i++)
-              Stack(
-                children: [
+                if (userResponses[currentQuestionIndex] == i)
                   Container(
                     width: double.infinity,
                     margin: EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(30.0),
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomLeft,
-                        end: Alignment.topRight,
-                        colors: [
-                          Color(0xFFA18AAE), // Bottom-left color
-                          Color(0xFFB8A2B9), // Top-right color
-                        ],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          spreadRadius: 2,
-                          blurRadius: 3,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        answerQuestion(i);
-                      },
-                      child: Text(
-                        [
-                          'Not at all',
-                          'Several days',
-                          'More than half the days',
-                          'Nearly every day'
-                        ][i],
-                        style: GoogleFonts.nunito(
-                          fontSize: 18,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.transparent,
-                        onPrimary: Colors.transparent,
-                        minimumSize: Size(double.infinity, 60),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                        elevation: 0,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
                       ),
                     ),
                   ),
-                ],
-              ),
-          ],
-        ),
+              ],
+            ),
+        ],
       ),
     );
   }

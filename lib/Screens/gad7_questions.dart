@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:inner_joy/Screens/gad7_results_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:inner_joy/Screens/PhqPage.dart';
 
 class GAD7Questions extends StatefulWidget {
   @override
@@ -14,13 +14,13 @@ class _GAD7QuestionsState extends State<GAD7Questions> {
   List<int> userResponses = List.filled(7, -1);
 
   List<String> questions = [
-    "Do you feel nervous, anxious, or on edge? \nImagine sitting at your desk, feeling uneasy, making it hard to concentrate on work.",
-    "Are you not able to stop or control worrying? \nPicture trying to unwind in the evening, but persistent worries about the future make relaxation difficult.",
-    "Do you worry too much about different things? \nLike you're going about your day, persistent thoughts of potential problems make it challenging to stay present.",
-    "Do you have trouble relaxing? \nImagine attempting to enjoy a quiet evening, an ongoing sense of tension makes relaxation elusive.",
-    "Have you became so restless that it's hard to sit still? \nEnvision focusing on a task, but overwhelming restlessness makes it difficult to stay seated.",
-    "Are you becoming easily annoyed or irritable?",
-    "Do you feeling afraid, as if something awful might happen? \nImagine going about your day, a lingering feeling of impending doom makes routine activities feel daunting.",
+    "Feeling nervous, anxious, or on edge?",
+    "Not being able to stop or control worrying?",
+    "Worrying too much about different things?",
+    "Trouble relaxing?",
+    "Being so restless that it's hard to sit still?",
+    "Becoming easily annoyed or irritable?",
+    "Feeling afraid, as if something awful might happen",
   ];
 
   void answerQuestion(int response) async {
@@ -71,6 +71,9 @@ class _GAD7QuestionsState extends State<GAD7Questions> {
             'year': year,
             'month': month,
           });
+          if (userData['username'] != null) {
+            data['username'] = userData['username'];
+          }
         }
 
         // Update the user's document in Firestore with merge:true
@@ -99,99 +102,113 @@ class _GAD7QuestionsState extends State<GAD7Questions> {
             color: Color(0xFF694F79),
           ),
           onPressed: () {
-            Navigator.of(context).pop();
+            if (currentQuestionIndex > 0) {
+              setState(() {
+                currentQuestionIndex--;
+              });
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PhqPage(),
+                ),
+              );
+            }
           },
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/Background3.png'),
-            fit: BoxFit.cover,
+      body: Column(
+        children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Question ${currentQuestionIndex + 1} of 7',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF694F79),
+                ),
+              ),
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Question ${currentQuestionIndex + 1} of 7',
-                  style: GoogleFonts.nunito(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF694F79),
-                  ),
+          SizedBox(height: 20),
+          Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                questions[currentQuestionIndex],
+                style: TextStyle(
+                  fontSize: 25,
+                  color: Color(0xFF694F79),
                 ),
               ),
             ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  questions[currentQuestionIndex],
-                  style: GoogleFonts.nunito(
-                    fontSize: 20,
-                    color: Color(0xFF694F79),
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              height: 1,
-              color: Colors.grey,
-              margin: EdgeInsets.only(bottom: 15),
-            ),
-            for (int i = 0; i < 4; i++)
-              Container(
-                width: double.infinity,
-                margin: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFFB8A2B9), Color(0xFFA18AAE)],
-                  ),
-                  borderRadius: BorderRadius.circular(30.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      spreadRadius: 2,
-                      blurRadius: 3,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  onPressed: () {
-                    answerQuestion(i);
-                  },
-                  child: Text(
-                    [
-                      'Not at all',
-                      'Several days',
-                      'More than half the days',
-                      'Nearly every day'
-                    ][i],
-                    style: GoogleFonts.nunito(
-                      fontSize: 18,
-                      color: Colors.white,
+          ),
+          SizedBox(height: 20),
+          Container(
+            width: double.infinity,
+            height: 1,
+            color: Colors.grey,
+            margin: EdgeInsets.only(bottom: 15),
+          ),
+          for (int i = 0; i < 4; i++)
+            Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30.0),
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFFB8A2B9),
+                        Color(0xFFA18AAE),
+                      ],
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.transparent,
-                    onPrimary: Colors.transparent,
-                    minimumSize: Size(double.infinity, 60),
-                    shape: RoundedRectangleBorder(
+                  child: ElevatedButton(
+                    onPressed: () => answerQuestion(i),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.transparent,
+                      elevation: 0,
+                      padding: EdgeInsets.all(20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                    child: Text(
+                      i == 0
+                          ? "Not at all"
+                          : i == 1
+                              ? "Several days"
+                              : i == 2
+                                  ? "More than half the days"
+                                  : "Nearly every day",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ),
+                if (userResponses[currentQuestionIndex] == i)
+                  Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(30.0),
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
+                      ),
                     ),
-                    elevation: 0, // Remove the default button elevation
                   ),
-                ),
-              ),
-          ],
-        ),
+              ],
+            ),
+        ],
       ),
     );
   }
